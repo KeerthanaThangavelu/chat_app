@@ -1,6 +1,12 @@
 ## Chat Application
 
-This project is a web-based chat application developed using Django . The application provides features of User Authentication, Real-Time Messaging, User Interface, and Message Encryption. 
+This project is a web-based chat application developed using Django . The application provides features of User Authentication, Real-Time Messaging, User Interface, and Message Encryption.
+
+## Objectives
+-	User Authentication: Implement user registration, login, and logout.
+-	Real-Time Messaging: Enable real-time messaging between users with encryption.
+-	User Interface: Develop a responsive and intuitive user interface.
+-	Message Encryption: Ensure messages are encrypted during storage and decrypted during retrieval.
 
 ### Technical Requirements
 
