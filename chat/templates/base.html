@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}Chat Application{% endblock %}</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header .header-left h1 {
+            margin: 0;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .header .user-info img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .header .user-info span {
+            padding: 5px 10px;
+            cursor: pointer;
+            position: relative;
+        }
+        .header .user-info .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            color: black;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .header .user-info .dropdown a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+        .header .user-info .dropdown a:hover {
+            background-color: #f4f4f4;
+        }
+        .header .user-info:hover .dropdown {
+            display: block;
+        }
+        .content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .form-container h2 {
+            margin-top: 0;
+            position: relative;
+            padding-right: 30px;
+        }
+        .form-container .info-icon {
+            position: absolute;
+            right: 0;
+            top: 0;
+            font-size: 20px;
+            color: #007bff;
+            cursor: pointer;
+        }
+        .form-container .info-message {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+            background-color: #e9f5ff;
+            color: #007bff;
+            display: flex;
+            align-items: center;
+        }
+        .form-container .info-message i {
+            margin-right: 10px;
+        }
+        .form-container form {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-container form .form-group {
+            margin-bottom: 15px;
+        }
+        .form-container form .form-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-container form .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .form-container form .form-group input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form-container form .form-group input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+         .sidebar {
+            width: 25%;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .user-list li {
+            cursor: pointer;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .user-list li:hover {
+            background-color: #e1e1e1;
+        }
+        .message-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            background-color: #fff;
+            flex: 1;
+        }
+        .input-group {
+            display: flex;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .input-group button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #007bff;
+            color: white;
+            border-left: none;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+    <!-- Link to Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Chat Application</h1>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="header-right">
+            <div class="user-info">
+                <i class="fas fa-user-circle fa-2x"></i>
+                <span>{{ user.username }}</span>
+                <div class="dropdown">
+                    <a href="{% url 'logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    <div class="footer">
+        &copy; 2024 Chat Application. All rights reserved.
+    </div>
+</body>
+</html>

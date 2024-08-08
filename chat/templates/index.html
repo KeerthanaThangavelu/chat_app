@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Application</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header .header-left h1 {
+            margin: 0;
+        }
+        .header .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+        .header .user-info img {
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .header .user-info span {
+            padding: 5px 10px;
+            cursor: pointer;
+            position: relative;
+        }
+        .header .user-info .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            color: black;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        .header .user-info .dropdown a {
+            display: block;
+            padding: 10px;
+            text-decoration: none;
+            color: black;
+        }
+        .header .user-info .dropdown a:hover {
+            background-color: #f4f4f4;
+        }
+        .user-info:hover .dropdown {
+            display: block;
+        }
+        .sidebar {
+            width: 25%;
+            background-color: #f4f4f4;
+            border-right: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+       }
+       .chat-username {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            height:20px;
+       }
+       .user-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            border: 1px solid #ddd; /* Add border */
+            border-radius: 5px;    /* Rounded corners */
+            align-items: center;
+        }
+        .user-list li {
+            cursor: pointer;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+        }
+        .user-list li:hover {
+            background-color: #e1e1e1;
+        }
+        .user-list li span {
+            padding: 5px;  /* Add padding around the text */
+            flex: 1;  /* Ensure the span takes up remaining space */
+        }
+        .message-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 300px;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            background-color: #fff;
+            flex: 1;
+        }
+        .input-group {
+            display: flex;
+        }
+        .input-group input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+        .input-group button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #007bff;
+            color: white;
+            border-left: none;
+            cursor: pointer;
+        }
+        .input-group button:hover {
+            background-color: #0056b3;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #ddd;
+            flex-shrink: 0;
+        }
+        .unread-icon {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: blue;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+    </style>
+    <!-- Link to Font Awesome for user icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>Chat Application</h1>
+        </div>
+        <div class="header-right">
+            <div class="user-info">
+                <i class="fas fa-user-circle fa-2x"></i>
+                <span>{{ user.username }}</span>
+                <div class="dropdown">
+                    <a href="{% url 'logout' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="display: flex; flex: 1;">
+        <div class="sidebar">
+            <h2>Chats</h2>
+            <ul class="user-list">
+                {% for user in users %}
+                    <li data-user-id="{{ user.id }}" onclick="selectUser({{ user.id }}, {{ user.username }} )">
+                        <i class="fas fa-user-circle fa-2x"></i>
+                        <span>{{ user.username }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="chat-container">
+            <div id="selected-user" class="chat-username"></div>
+            <div class="message-box" id="message-box">
+                <!-- Messages will be displayed here -->
+            </div>
+            <div class="input-group">
+                <input type="text" id="message-input" placeholder="Type a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        &copy; 2024 Chat Application. All rights reserved.
+    </div>
+
+    <script>
+        let selectedUserId = null;
+
+        function selectUser(userId, username) {
+            selectedUserId = userId;
+            const selectedUser = document.getElementById('selected-user');
+            selectedUser.textContent = `${username}`;
+            document.getElementById('message-box').innerHTML = ''; // Clear message box
+            // Fetch and display messages for the selected user
+            fetch(`/chat/messages/${userId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    const messageBox = document.getElementById('message-box');
+                    data.messages.forEach(message => {
+                        const messageElement = document.createElement('div');
+                        messageElement.textContent = `${message.timestamp} ${message.sender}: ${message.text}`;
+                        messageBox.appendChild(messageElement);
+                    });
+                });
+        }
+
+        function sendMessage() {
+            if (!selectedUserId) {
+                alert('Please select a user first.');
+                return;
+            }
+            const messageInput = document.getElementById('message-input');
+            const message = messageInput.value;
+            if (!message) return;
+
+            fetch('/chat/send_message/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    user_id: selectedUserId,
+                    message: message
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message-input').value = ''; // Clear input
+                const messageBox = document.getElementById('message-box');
+                const messageElement = document.createElement('div');
+                messageElement.textContent = `${data.message.timestamp} ${data.message.sender}: ${data.message.text}`;
+                messageBox.appendChild(messageElement);
+            });
+        }
+
+        function updateUserList() {
+            fetch('/chat/user-list/')
+                .then(response => response.json())
+                .then(data => {
+                    const userList = document.querySelector('.user-list');
+                    userList.innerHTML = '';
+                    data.users.forEach(user => {
+                        const userItem = document.createElement('li');
+                        userItem.setAttribute('data-user-id', user.id);
+                        userItem.classList.add(user.unread_messages > 0 ? 'unread' : 'read');
+                        userItem.onclick = () => selectUser(user.id, user.username);
+                        userItem.innerHTML = `<i class="fas fa-user-circle fa-2x"></i> <span>${user.username}</span>  ${user.unread_messages > 0 ? '<div class="unread-icon"></div>' : ''}`;
+                        userList.appendChild(userItem);
+                    });
+                });
+        }
+
+         document.addEventListener('DOMContentLoaded', () => {
+            updateUserList();
+        });
+
+        setInterval(updateUserList, 300);
+
+    </script>
+</body>
+</html>
